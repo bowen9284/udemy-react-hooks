@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import useHttp from '../../hooks/http';
 import Card from '../UI/Card';
+import ErrorModal from '../UI/ErrorModal';
 import './Search.css';
 
 const firebaseUrl =
@@ -9,6 +10,7 @@ const firebaseUrl =
 const Search = React.memo(({ onLoadIngredients }) => {
   const [enteredFilter, setEnteredFilter] = useState('');
   const inputRef = useRef();
+  const { loading, data, error, sendRequest, clear } = useHttp();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,33 +19,35 @@ const Search = React.memo(({ onLoadIngredients }) => {
           enteredFilter.length === 0
             ? ''
             : `?orderBy="title"&equalTo="${enteredFilter}"`;
-
-        const fetchData = async () => {
-          const response = await fetch(firebaseUrl + query);
-          const responseJson = await response.json();
-          const loadedIngredients = [];
-          for (const key in responseJson) {
-            loadedIngredients.push({
-              id: key,
-              title: responseJson[key].title,
-              amount: responseJson[key].amount,
-            });
-          }
-          onLoadIngredients(loadedIngredients);
-        };
-        fetchData();
+        sendRequest(firebaseUrl + query, 'GET');
       }
     }, 500);
     return () => {
       clearTimeout(timer);
     };
-  }, [enteredFilter, onLoadIngredients, inputRef]);
+  }, [enteredFilter, inputRef, sendRequest]);
+
+  useEffect(() => {
+    if (!loading && !error && data) {
+      const loadedIngredients = [];
+      for (const key in data) {
+        loadedIngredients.push({
+          id: key,
+          title: data[key].title,
+          amount: data[key].amount,
+        });
+      }
+      onLoadIngredients(loadedIngredients);
+    }
+  }, [data, loading, error, onLoadIngredients]);
 
   return (
     <section className="search">
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
       <Card>
         <div className="search-input">
           <label>Filter by Title</label>
+          {loading && <span>Loading...</span>}
           <input
             ref={inputRef}
             type="text"

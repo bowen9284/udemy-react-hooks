@@ -28,6 +28,7 @@ const Ingredients = () => {
     sendRequest,
     reqExtra,
     reqIdentifier,
+    clear,
   } = useHttp();
 
   useEffect(() => {
@@ -41,36 +42,23 @@ const Ingredients = () => {
     }
   }, [data, reqExtra, reqIdentifier, loading, error]);
 
-  const addIngredientHandler = useCallback(async (ingredient) => {
-    sendRequest(
-      `https://react-hooks-update-4556c.firebaseio.com/ingredients.json`,
-      'POST',
-      JSON.stringify(ingredient),
-      ingredient,
-      'ADD_INGREDIENT'
-    );
-    // dispatchHttp({ type: 'SEND' });
-    // try {
-    //   let response = await fetch(`${firebaseUrl}/ingredients.json`, {
-    //     method: 'POST',
-    //     body: JSON.stringify(ingredient),
-    //     headers: { 'Content-Type': 'application/json' },
-    //   });
-    //   const responseJson = await response.json();
-    //   dispatch({
-    //     type: 'ADD',
-    //     ingredient: { id: responseJson.name, ...ingredient },
-    //   });
-    // } catch (error) {
-    //   dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong!' });
-    // }
-    // dispatchHttp({ type: 'RESPONSE' });
-  }, []);
+  const addIngredientHandler = useCallback(
+    async (ingredient) => {
+      sendRequest(
+        `https://react-hooks-update-4556c.firebaseio.com/ingredients.json`,
+        'POST',
+        JSON.stringify(ingredient),
+        ingredient,
+        'ADD_INGREDIENT'
+      );
+    },
+    [sendRequest]
+  );
 
   const removeIngredientHandler = useCallback(
     async (id) => {
       sendRequest(
-        `https://react-hooks-update-4556c.firebaseio.com/ingredients/${id}.json`,
+        `https://react-hooks-update-4556c.firebaseio.com/ingredients/${id}.jon`,
         'DELETE',
         null,
         id,
@@ -84,10 +72,6 @@ const Ingredients = () => {
     dispatch({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
-  const clearError = useCallback(() => {
-    // dispatchHttp({ type: 'CLEAR' });
-  }, []);
-
   const ingredientList = useMemo(() => {
     return (
       <IngredientList
@@ -99,7 +83,7 @@ const Ingredients = () => {
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
         loading={loading}
